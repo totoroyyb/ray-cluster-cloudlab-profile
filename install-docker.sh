@@ -20,6 +20,7 @@ sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # Add users to the docker group to avoid permission error
+sudo newgrp docker
 USERS="root `ls /users`"
 for user in $USERS; do
   if [ "$user" = "root" ]; then
@@ -29,5 +30,5 @@ for user in $USERS; do
   fi
 done
 
-sudo chmod 660 /var/run/docker.sock
+sudo chmod 666 /var/run/docker.sock
 set +x
