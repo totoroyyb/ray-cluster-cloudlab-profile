@@ -141,6 +141,9 @@ for i in range(params.nodeCount):
     node.addService(pg.Execute(shell="bash",
         command="/local/repository/ulimit.sh > /tmp/ulimit.log 2>&1"))
     
+    node.addService(pg.Execute(shell="bash",
+        command="/local/repository/setup_ray.sh > /tmp/ray-setup.log 2>&1"))
+
     # Install and start X11 VNC. Calling this informs the Portal that you want a VNC
     # option in the node context menu to create a browser VNC client.
     #
