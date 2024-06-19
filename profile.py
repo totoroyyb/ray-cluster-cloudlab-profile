@@ -129,7 +129,7 @@ fsnode = request.RemoteBlockstore("fsnode", "/mydata")
 # This URN is displayed in the web interfaace for your dataset.
 fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file"
 
-num_fslinks = math.ceil(params.nodeCount / 10)
+num_fslinks = int(math.ceil(params.nodeCount / 10))
 # fslinks = [ request.Link(f"fslink-{i}") for i in range(num_fslinks) ]
 fslinks = []
 for i in range(num_fslinks):
