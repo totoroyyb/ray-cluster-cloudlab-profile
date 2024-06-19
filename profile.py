@@ -32,10 +32,6 @@ imageList = [
     ('urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU22-64-STD', 'UBUNTU 22.04'),
     ('urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU20-64-STD', 'UBUNTU 20.04')]
 
-# Do not change these unless you change the setup scripts too.
-# nfsServerName = "nfs"
-# nfsLanName    = "nfsLan"
-# nfsDirectory  = "/nfs"
 
 pc.defineParameter("osImage", "Select OS image",
                    portal.ParameterType.IMAGE,
@@ -47,6 +43,10 @@ pc.defineParameter("phystype",  "Optional physical node type",
                    portal.ParameterType.STRING, "",
                    longDescription="Specify a single physical node type (pc3000,d710,etc) " +
                    "instead of letting the resource mapper choose for you.")
+
+pc.defineParameter("dataset", "Your dataset URN",
+                   portal.ParameterType.STRING,
+                   "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file")
 
 # Optionally create XEN VMs instead of allocating bare metal nodes.
 # pc.defineParameter("useVMs",  "Use XEN VMs",
@@ -97,19 +97,37 @@ if params.phystype != "":
 
 pc.verifyParameters()
 
+# Do not change these unless you change the setup scripts too.
+nfsServerName = "nfs"
+nfsLanName    = "nfsLan"
+nfsDirectory  = "/nfs"
+
 # The NFS network. All these options are required.
-# nfsLan = request.LAN(nfsLanName)
-# nfsLan.best_effort       = True
-# nfsLan.vlan_tagging      = True
-# nfsLan.link_multiplexing = True
+nfsLan = request.LAN(nfsLanName)
+nfsLan.best_effort       = True
+nfsLan.vlan_tagging      = True
+nfsLan.link_multiplexing = True
 
 # The NFS server.
-# nfsServer = request.RawPC(nfsServerName)
-# nfsServer.disk_image = params.osImage
-# # Attach server to lan.
-# nfsLan.addInterface(nfsServer.addInterface())
-# # Initialization script for the server
-# nfsServer.addService(pg.Execute(shell="sh", command="sudo /bin/bash /local/repository/nfs-server.sh"))
+nfsServer = request.RawPC(nfsServerName)
+nfsServer.disk_image = params.osImage
+# Attach server to lan.
+nfsLan.addInterface(nfsServer.addInterface())
+# Initialization script for the server
+nfsServer.addService(pg.Execute(shell="sh", command="sudo /bin/bash /local/repository/nfs-server.sh"))
+
+# Special node that represents the ISCSI device where the dataset resides
+dsnode = request.RemoteBlockstore("dsnode", nfsDirectory)
+dsnode.dataset = params.dataset
+
+# Link between the nfsServer and the ISCSI device that holds the dataset
+dslink = request.Link("dslink")
+dslink.addInterface(dsnode.interface)
+dslink.addInterface(nfsServer.addInterface())
+# Special attributes for this link that we must use.
+dslink.best_effort = True
+dslink.vlan_tagging = True
+dslink.link_multiplexing = True
 
 # Create link.
 lan = None
@@ -124,17 +142,17 @@ if params.nodeCount > 1:
     if params.sameSwitch:
         lan.setNoInterSwitchLinks()
 
-num_fslinks = int(math.ceil(float(params.nodeCount) / 5))
-fslinks = [ request.Link("fslink-%d" % i) for i in range(num_fslinks) ]
-for i, fslink in enumerate(fslinks):
-    # The remote file system is represented by special node.
-    fsnode = request.RemoteBlockstore("fsnode-%d" % i, "/mydata")
-    # This URN is displayed in the web interfaace for your dataset.
-    fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file"
-    fslink.addInterface(fsnode.interface)
-    # Special attributes for this link that we must use.
-    fslink.best_effort = True
-    fslink.vlan_tagging = True
+# num_fslinks = int(math.ceil(float(params.nodeCount) / 5))
+# fslinks = [ request.Link("fslink-%d" % i) for i in range(num_fslinks) ]
+# for i, fslink in enumerate(fslinks):
+#     # The remote file system is represented by special node.
+#     fsnode = request.RemoteBlockstore("fsnode-%d" % i, "/mydata")
+#     # This URN is displayed in the web interfaace for your dataset.
+#     fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file"
+#     fslink.addInterface(fsnode.interface)
+#     # Special attributes for this link that we must use.
+#     fslink.best_effort = True
+#     fslink.vlan_tagging = True
 
 # for i in range(num_fslinks):
 #     # fslink = request.Link('fslink-%d' % (i))
@@ -164,15 +182,19 @@ for i in range(params.nodeCount):
         node.hardware_type = params.phystype
 
     ### setup dataset
-    ds_iface = node.addInterface()
-    fslinks[i % num_fslinks].addInterface(ds_iface)
+    nfsLan.addInterface(node.addInterface())
+    # ds_iface = node.addInterface()
+    # fslinks[i % num_fslinks].addInterface(ds_iface)
 
     ### run setup scripts
+    # Initialization script for the clients
+    node.addService(pg.Execute(shell="sh", command="sudo /bin/bash /local/repository/nfs-client.sh"))
+    
     # install mount point && generate ssh keys
     node.addService(pg.Execute(shell="bash",
         command="/local/repository/ssh.sh > /tmp/ssh.log 2>&1"))
-    node.addService(pg.Execute(shell="bash",
-        command="/local/repository/mount.sh > /tmp/mount.log 2>&1"))
+    # node.addService(pg.Execute(shell="bash",
+    #     command="/local/repository/mount.sh > /tmp/mount.log 2>&1"))
 
     # dependencies installation
     node.addService(pg.Execute(shell="bash",
