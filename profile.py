@@ -69,11 +69,11 @@ pc.defineParameter("linkSpeed", "Link Speed",portal.ParameterType.INTEGER, 0,
                    
 # For very large lans you might to tell the resource mapper to override the bandwidth constraints
 # and treat it a "best-effort"
-# pc.defineParameter("bestEffort",  "Best Effort", portal.ParameterType.BOOLEAN, False,
-#                     advanced=True,
-#                     longDescription="For very large lans, you might get an error saying 'not enough bandwidth.' " +
-#                     "This options tells the resource mapper to ignore bandwidth and assume you know what you " +
-#                     "are doing, just give me the lan I ask for (if enough nodes are available).")
+pc.defineParameter("bestEffort",  "Best Effort", portal.ParameterType.BOOLEAN, False,
+                    advanced=True,
+                    longDescription="For very large lans, you might get an error saying 'not enough bandwidth.' " +
+                    "This options tells the resource mapper to ignore bandwidth and assume you know what you " +
+                    "are doing, just give me the lan I ask for (if enough nodes are available).")
                     
 # Sometimes you want all of nodes on the same switch, Note that this option can make it impossible
 # for your experiment to map.
@@ -137,6 +137,8 @@ if params.nodeCount > 1:
     else:
         lan = request.LAN()
     
+    if params.bestEffort:
+        lan.best_effort = True
     if params.linkSpeed > 0:
         lan.bandwidth = params.linkSpeed
     if params.sameSwitch:
