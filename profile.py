@@ -124,14 +124,14 @@ if params.nodeCount > 1:
     if params.sameSwitch:
         lan.setNoInterSwitchLinks()
 
+num_fslinks = int(math.ceil(params.nodeCount / 10))
 fslinks = []
 if params.nodeCount >= 1:
     # The remote file system is represented by special node.
     fsnode = request.RemoteBlockstore("fsnode", "/mydata")
     # This URN is displayed in the web interfaace for your dataset.
     fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file"
-    
-    num_fslinks = int(math.ceil(params.nodeCount / 10))
+
     # fslinks = [ request.Link(f"fslink-{i}") for i in range(num_fslinks) ]
   
     for i in range(num_fslinks):
