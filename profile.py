@@ -30,6 +30,11 @@ imageList = [
     ('urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU22-64-STD', 'UBUNTU 22.04'),
     ('urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU20-64-STD', 'UBUNTU 20.04')]
 
+# Do not change these unless you change the setup scripts too.
+# nfsServerName = "nfs"
+# nfsLanName    = "nfsLan"
+# nfsDirectory  = "/nfs"
+
 pc.defineParameter("osImage", "Select OS image",
                    portal.ParameterType.IMAGE,
                    imageList[0], imageList,
@@ -90,6 +95,20 @@ if params.phystype != "":
 
 pc.verifyParameters()
 
+# The NFS network. All these options are required.
+# nfsLan = request.LAN(nfsLanName)
+# nfsLan.best_effort       = True
+# nfsLan.vlan_tagging      = True
+# nfsLan.link_multiplexing = True
+
+# The NFS server.
+# nfsServer = request.RawPC(nfsServerName)
+# nfsServer.disk_image = params.osImage
+# # Attach server to lan.
+# nfsLan.addInterface(nfsServer.addInterface())
+# # Initialization script for the server
+# nfsServer.addService(pg.Execute(shell="sh", command="sudo /bin/bash /local/repository/nfs-server.sh"))
+
 # Create link.
 if params.nodeCount > 1:
     lan = request.Link()
@@ -121,6 +140,19 @@ for i in range(params.nodeCount):
     # Optional hardware type.
     if params.phystype != "":
         node.hardware_type = params.phystype
+
+    ### setup dataset
+    ds_iface = node.addInterface()
+    # The remote file system is represented by special node.
+    fsnode = request.RemoteBlockstore("fsnode", "/mydata")
+    # This URN is displayed in the web interfaace for your dataset.
+    fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file"
+    fslink = request.Link("fslink")
+    fslink.addInterface(ds_iface)
+    fslink.addInterface(fsnode.interface)
+    # Special attributes for this link that we must use.
+    fslink.best_effort = True
+    fslink.vlan_tagging = True
 
     ### run setup scripts
     # install mount point && generate ssh keys
