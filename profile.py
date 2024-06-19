@@ -131,14 +131,20 @@ fsnode = request.RemoteBlockstore("fsnode", "/mydata")
 # This URN is displayed in the web interfaace for your dataset.
 fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file"
 
-# fslinks = [ request.Link(f"fslink-{i}") for i in range(num_fslinks) ]
-for i in range(num_fslinks):
-    fslink = request.Link('fslink-%d' % (i))
+fslinks = [ request.Link("fslink-%d" % i for i in range(num_fslinks) ]
+for fslink in fslinks:
     fslink.addInterface(fsnode.interface)
     # Special attributes for this link that we must use.
     fslink.best_effort = True
     fslink.vlan_tagging = True
-    fslinks.append(fslink)
+
+# for i in range(num_fslinks):
+#     # fslink = request.Link('fslink-%d' % (i))
+#     fslink.addInterface(fsnode.interface)
+#     # Special attributes for this link that we must use.
+#     fslink.best_effort = True
+#     fslink.vlan_tagging = True
+#     fslinks.append(fslink)
 
 # Process nodes, adding to link.
 for i in range(params.nodeCount):
