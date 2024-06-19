@@ -131,8 +131,6 @@ fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray
 
 num_fslinks = math.ceil(params.nodeCount / 10)
 fslinks = [ request.Link(f"fslink-{i}") for i in range(num_fslinks) ]
-
-# fslink = 
 for fslink in fslinks:
   fslink.addInterface(fsnode.interface)
   # Special attributes for this link that we must use.
