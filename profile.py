@@ -112,12 +112,12 @@ pc.verifyParameters()
 # nfsServer.addService(pg.Execute(shell="sh", command="sudo /bin/bash /local/repository/nfs-server.sh"))
 
 # Create link.
+lan = None
 if params.nodeCount > 1:
-    lan = request.Link()
-    # if params.nodeCount == 2:
-    #     lan = request.Link()
-    # else:
-    #     lan = request.LAN()
+    if params.nodeCount == 2:
+        lan = request.Link()
+    else:
+        lan = request.LAN()
     
     if params.linkSpeed > 0:
         lan.bandwidth = params.linkSpeed
