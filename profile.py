@@ -124,7 +124,7 @@ if params.nodeCount > 1:
     if params.sameSwitch:
         lan.setNoInterSwitchLinks()
 
-num_fslinks = int(math.ceil(params.nodeCount / 10))
+num_fslinks = int(math.ceil(float(params.nodeCount) / 10))
 fslinks = []
 # The remote file system is represented by special node.
 fsnode = request.RemoteBlockstore("fsnode", "/mydata")
@@ -161,7 +161,6 @@ for i in range(params.nodeCount):
 
     ### setup dataset
     ds_iface = node.addInterface()
-    raise Exception(num_fslinks)
     fslinks[i % num_fslinks].addInterface(ds_iface)
 
     ### run setup scripts
