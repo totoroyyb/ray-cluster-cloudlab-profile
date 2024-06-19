@@ -131,7 +131,7 @@ fsnode = request.RemoteBlockstore("fsnode", "/mydata")
 # This URN is displayed in the web interfaace for your dataset.
 fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file"
 
-fslinks = [ request.Link("fslink-%d" % i for i in range(num_fslinks) ]
+fslinks = [ request.Link("fslink-%d" % i) for i in range(num_fslinks) ]
 for fslink in fslinks:
     fslink.addInterface(fsnode.interface)
     # Special attributes for this link that we must use.
