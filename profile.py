@@ -122,6 +122,16 @@ if params.nodeCount > 1:
     if params.sameSwitch:
         lan.setNoInterSwitchLinks()
 
+# The remote file system is represented by special node.
+fsnode = request.RemoteBlockstore("fsnode", "/mydata")
+# This URN is displayed in the web interfaace for your dataset.
+fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file"
+fslink = request.Link("fslink")
+fslink.addInterface(fsnode.interface)
+# Special attributes for this link that we must use.
+fslink.best_effort = True
+fslink.vlan_tagging = True
+
 # Process nodes, adding to link.
 for i in range(params.nodeCount):
     # Create a node and add it to the request
@@ -143,16 +153,7 @@ for i in range(params.nodeCount):
 
     ### setup dataset
     ds_iface = node.addInterface()
-    # The remote file system is represented by special node.
-    fsnode = request.RemoteBlockstore("fsnode", "/mydata")
-    # This URN is displayed in the web interfaace for your dataset.
-    fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file"
-    fslink = request.Link("fslink")
     fslink.addInterface(ds_iface)
-    fslink.addInterface(fsnode.interface)
-    # Special attributes for this link that we must use.
-    fslink.best_effort = True
-    fslink.vlan_tagging = True
 
     ### run setup scripts
     # install mount point && generate ssh keys
@@ -183,7 +184,6 @@ for i in range(params.nodeCount):
     #
     if params.startVNC:
         node.startVNC()
-    
 
 # Print the RSpec to the enclosing page.
 pc.printRequestRSpec(request)
