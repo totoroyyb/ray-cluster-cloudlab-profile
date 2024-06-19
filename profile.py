@@ -97,37 +97,37 @@ if params.phystype != "":
 
 pc.verifyParameters()
 
-# # Do not change these unless you change the setup scripts too.
-# nfsServerName = "nfs"
-# nfsLanName    = "nfsLan"
-# nfsDirectory  = "/nfs"
+# Do not change these unless you change the setup scripts too.
+nfsServerName = "nfs"
+nfsLanName    = "nfsLan"
+nfsDirectory  = "/nfs"
 
-# # The NFS network. All these options are required.
-# nfsLan = request.LAN(nfsLanName)
-# nfsLan.best_effort       = True
-# nfsLan.vlan_tagging      = True
-# nfsLan.link_multiplexing = True
+# The NFS network. All these options are required.
+nfsLan = request.LAN(nfsLanName)
+nfsLan.best_effort       = True
+nfsLan.vlan_tagging      = True
+nfsLan.link_multiplexing = True
 
-# # The NFS server.
-# nfsServer = request.RawPC(nfsServerName)
-# nfsServer.disk_image = params.osImage
-# # Attach server to lan.
-# nfsLan.addInterface(nfsServer.addInterface())
-# # Initialization script for the server
-# nfsServer.addService(pg.Execute(shell="sh", command="sudo /bin/bash /local/repository/nfs-server.sh"))
+# The NFS server.
+nfsServer = request.RawPC(nfsServerName)
+nfsServer.disk_image = params.osImage
+# Attach server to lan.
+nfsLan.addInterface(nfsServer.addInterface())
+# Initialization script for the server
+nfsServer.addService(pg.Execute(shell="sh", command="sudo /bin/bash /local/repository/nfs-server.sh"))
 
-# # Special node that represents the ISCSI device where the dataset resides
-# dsnode = request.RemoteBlockstore("dsnode", nfsDirectory)
-# dsnode.dataset = params.dataset
+# Special node that represents the ISCSI device where the dataset resides
+dsnode = request.RemoteBlockstore("dsnode", nfsDirectory)
+dsnode.dataset = params.dataset
 
-# # Link between the nfsServer and the ISCSI device that holds the dataset
-# dslink = request.Link("dslink")
-# dslink.addInterface(dsnode.interface)
-# dslink.addInterface(nfsServer.addInterface())
-# # Special attributes for this link that we must use.
-# dslink.best_effort = True
-# dslink.vlan_tagging = True
-# dslink.link_multiplexing = True
+# Link between the nfsServer and the ISCSI device that holds the dataset
+dslink = request.Link("dslink")
+dslink.addInterface(dsnode.interface)
+dslink.addInterface(nfsServer.addInterface())
+# Special attributes for this link that we must use.
+dslink.best_effort = True
+dslink.vlan_tagging = True
+dslink.link_multiplexing = True
 
 # Create link.
 lan = None
@@ -139,23 +139,24 @@ if params.nodeCount > 1:
     
     if params.bestEffort:
         lan.best_effort = True
+        lan.link_multiplexing = True
     if params.linkSpeed > 0:
         lan.bandwidth = params.linkSpeed
     if params.sameSwitch:
         lan.setNoInterSwitchLinks()
 
-num_fslinks = int(math.ceil(float(params.nodeCount) / 5))
-fslinks = [ request.Link("fslink-%d" % i) for i in range(num_fslinks) ]
-for i, fslink in enumerate(fslinks):
-    # The remote file system is represented by special node.
-    fsnode = request.RemoteBlockstore("fsnode-%d" % i, "/mydata")
-    # This URN is displayed in the web interfaace for your dataset.
-    fsnode.dataset = params.dataset
-    fslink.addInterface(fsnode.interface)
-    # Special attributes for this link that we must use.
-    fslink.best_effort = True
-    fslink.vlan_tagging = True
-    fslink.link_multiplexing = True
+# num_fslinks = int(math.ceil(float(params.nodeCount) / 5))
+# fslinks = [ request.Link("fslink-%d" % i) for i in range(num_fslinks) ]
+# for i, fslink in enumerate(fslinks):
+#     # The remote file system is represented by special node.
+#     fsnode = request.RemoteBlockstore("fsnode-%d" % i, "/mydata")
+#     # This URN is displayed in the web interfaace for your dataset.
+#     fsnode.dataset = params.dataset
+#     fslink.addInterface(fsnode.interface)
+#     # Special attributes for this link that we must use.
+#     fslink.best_effort = True
+#     fslink.vlan_tagging = True
+#     fslink.link_multiplexing = True
 
 # for i in range(num_fslinks):
 #     # fslink = request.Link('fslink-%d' % (i))
@@ -185,13 +186,13 @@ for i in range(params.nodeCount):
         node.hardware_type = params.phystype
 
     ### setup dataset
-    # nfsLan.addInterface(node.addInterface())
-    ds_iface = node.addInterface()
-    fslinks[i % num_fslinks].addInterface(ds_iface)
+    nfsLan.addInterface(node.addInterface())
+    # ds_iface = node.addInterface()
+    # fslinks[i % num_fslinks].addInterface(ds_iface)
 
     ### run setup scripts
     # Initialization script for the clients
-    # node.addService(pg.Execute(shell="sh", command="sudo /bin/bash /local/repository/nfs-client.sh"))
+    node.addService(pg.Execute(shell="sh", command="sudo /bin/bash /local/repository/nfs-client.sh"))
     
     # install mount point && generate ssh keys
     node.addService(pg.Execute(shell="bash",
