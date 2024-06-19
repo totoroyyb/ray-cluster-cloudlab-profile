@@ -153,6 +153,7 @@ for i, fslink in enumerate(fslinks):
     # Special attributes for this link that we must use.
     fslink.best_effort = True
     fslink.vlan_tagging = True
+    fslink.link_multiplexing = True
 
 # for i in range(num_fslinks):
 #     # fslink = request.Link('fslink-%d' % (i))
