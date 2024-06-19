@@ -125,14 +125,12 @@ if params.nodeCount > 1:
         lan.setNoInterSwitchLinks()
 
 num_fslinks = int(math.ceil(float(params.nodeCount) / 10))
-fslinks = []
-# The remote file system is represented by special node.
-fsnode = request.RemoteBlockstore("fsnode", "/mydata")
-# This URN is displayed in the web interfaace for your dataset.
-fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file"
-
 fslinks = [ request.Link("fslink-%d" % i) for i in range(num_fslinks) ]
 for fslink in fslinks:
+    # The remote file system is represented by special node.
+    fsnode = request.RemoteBlockstore("fsnode", "/mydata")
+    # This URN is displayed in the web interfaace for your dataset.
+    fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file"
     fslink.addInterface(fsnode.interface)
     # Special attributes for this link that we must use.
     fslink.best_effort = True
