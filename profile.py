@@ -133,7 +133,7 @@ num_fslinks = math.ceil(params.nodeCount / 10)
 # fslinks = [ request.Link(f"fslink-{i}") for i in range(num_fslinks) ]
 fslinks = []
 for i in range(num_fslinks):
-  fslink = request.Link(f"fslink-{i}")
+  fslink = request.Link('fslink-%d' % (i))
   fslink.addInterface(fsnode.interface)
   # Special attributes for this link that we must use.
   fslink.best_effort = True
