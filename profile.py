@@ -124,17 +124,17 @@ if params.nodeCount > 1:
     if params.sameSwitch:
         lan.setNoInterSwitchLinks()
 
-# num_fslinks = int(math.ceil(float(params.nodeCount) / 10))
-# fslinks = [ request.Link("fslink-%d" % i) for i in range(num_fslinks) ]
-# for i, fslink in enumerate(fslinks):
-#     # The remote file system is represented by special node.
-#     fsnode = request.RemoteBlockstore("fsnode-%d" % i, "/mydata")
-#     # This URN is displayed in the web interfaace for your dataset.
-#     fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file"
-#     fslink.addInterface(fsnode.interface)
-#     # Special attributes for this link that we must use.
-#     fslink.best_effort = True
-#     fslink.vlan_tagging = True
+num_fslinks = int(math.ceil(float(params.nodeCount) / 5))
+fslinks = [ request.Link("fslink-%d" % i) for i in range(num_fslinks) ]
+for i, fslink in enumerate(fslinks):
+    # The remote file system is represented by special node.
+    fsnode = request.RemoteBlockstore("fsnode-%d" % i, "/mydata")
+    # This URN is displayed in the web interfaace for your dataset.
+    fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file"
+    fslink.addInterface(fsnode.interface)
+    # Special attributes for this link that we must use.
+    fslink.best_effort = True
+    fslink.vlan_tagging = True
 
 # for i in range(num_fslinks):
 #     # fslink = request.Link('fslink-%d' % (i))
@@ -164,8 +164,8 @@ for i in range(params.nodeCount):
         node.hardware_type = params.phystype
 
     ### setup dataset
-    # ds_iface = node.addInterface()
-    # fslinks[i % num_fslinks].addInterface(ds_iface)
+    ds_iface = node.addInterface()
+    fslinks[i % num_fslinks].addInterface(ds_iface)
 
     ### run setup scripts
     # install mount point && generate ssh keys
