@@ -161,6 +161,7 @@ for i in range(params.nodeCount):
 
     ### setup dataset
     ds_iface = node.addInterface()
+    raise Exception(num_fslinks)
     fslinks[i % num_fslinks].addInterface(ds_iface)
 
     ### run setup scripts
