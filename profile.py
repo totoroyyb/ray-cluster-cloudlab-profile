@@ -13,6 +13,8 @@ import geni.rspec.pg as pg
 # Emulab specific extensions.
 import geni.rspec.emulab as emulab
 
+import math
+
 # Create a portal context, needed to defined parameters
 pc = portal.Context()
 
@@ -126,11 +128,16 @@ if params.nodeCount > 1:
 fsnode = request.RemoteBlockstore("fsnode", "/mydata")
 # This URN is displayed in the web interfaace for your dataset.
 fsnode.dataset = "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file"
-fslink = request.Link("fslink")
-fslink.addInterface(fsnode.interface)
-# Special attributes for this link that we must use.
-fslink.best_effort = True
-fslink.vlan_tagging = True
+
+num_fslinks = math.ceil(params.nodeCount / 10)
+fslinks = [ request.Link(f"fslink-{i}") for i in range(num_fslinks) ]
+
+# fslink = 
+for fslink in fslinks:
+  fslink.addInterface(fsnode.interface)
+  # Special attributes for this link that we must use.
+  fslink.best_effort = True
+  fslink.vlan_tagging = True
 
 # Process nodes, adding to link.
 for i in range(params.nodeCount):
@@ -153,7 +160,7 @@ for i in range(params.nodeCount):
 
     ### setup dataset
     ds_iface = node.addInterface()
-    fslink.addInterface(ds_iface)
+    fslinks[i % num_fslinks].addInterface(ds_iface)
 
     ### run setup scripts
     # install mount point && generate ssh keys
