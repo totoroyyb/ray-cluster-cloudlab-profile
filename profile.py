@@ -154,13 +154,13 @@ for i, fslink in enumerate(fslinks):
     fslink.best_effort = True
     fslink.vlan_tagging = True
 
-for i in range(num_fslinks):
-    # fslink = request.Link('fslink-%d' % (i))
-    fslink.addInterface(fsnode.interface)
-    # Special attributes for this link that we must use.
-    fslink.best_effort = True
-    fslink.vlan_tagging = True
-    fslinks.append(fslink)
+# for i in range(num_fslinks):
+#     # fslink = request.Link('fslink-%d' % (i))
+#     fslink.addInterface(fsnode.interface)
+#     # Special attributes for this link that we must use.
+#     fslink.best_effort = True
+#     fslink.vlan_tagging = True
+#     fslinks.append(fslink)
 
 # Process nodes, adding to link.
 for i in range(params.nodeCount):
