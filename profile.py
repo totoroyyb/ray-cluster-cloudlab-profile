@@ -44,9 +44,9 @@ pc.defineParameter("phystype",  "Optional physical node type",
                    longDescription="Specify a single physical node type (pc3000,d710,etc) " +
                    "instead of letting the resource mapper choose for you.")
 
-pc.defineParameter("dataset", "Your dataset URN",
-                   portal.ParameterType.STRING,
-                   "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file")
+# pc.defineParameter("dataset", "Your dataset URN",
+#                    portal.ParameterType.STRING,
+#                    "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file")
 
 # Optionally create XEN VMs instead of allocating bare metal nodes.
 # pc.defineParameter("useVMs",  "Use XEN VMs",
@@ -145,14 +145,14 @@ if params.nodeCount > 1:
     if params.sameSwitch:
         lan.setNoInterSwitchLinks()
 
-fslink = request.Link("fslink")
-fsnode = request.RemoteBlockstore("fsnode", "/mydata")
-fsnode.dataset = params.dataset
-fslink.addInterface(fsnode.interface)
-# Special attributes for this link that we must use.
-fslink.best_effort = True
-fslink.vlan_tagging = True
-fslink.link_multiplexing = True
+# fslink = request.Link("fslink")
+# fsnode = request.RemoteBlockstore("fsnode", "/mydata")
+# fsnode.dataset = params.dataset
+# fslink.addInterface(fsnode.interface)
+# # Special attributes for this link that we must use.
+# fslink.best_effort = True
+# fslink.vlan_tagging = True
+# fslink.link_multiplexing = True
 
 # num_fslinks = int(math.ceil(float(params.nodeCount) / 5))
 # fslinks = [ request.Link("fslink-%d" % i) for i in range(num_fslinks) ]
@@ -196,8 +196,8 @@ for i in range(params.nodeCount):
 
     ### setup dataset
     # nfsLan.addInterface(node.addInterface())
-    ds_iface = node.addInterface()
-    fslink.addInterface(ds_iface)
+    # ds_iface = node.addInterface()
+    # fslink.addInterface(ds_iface)
     # fslinks[i % num_fslinks].addInterface(ds_iface)
 
     ### run setup scripts
@@ -224,6 +224,9 @@ for i in range(params.nodeCount):
     
     node.addService(pg.Execute(shell="bash",
         command="/local/repository/setup_ray.sh > /tmp/ray-setup.log 2>&1"))
+
+    node.addService(pg.Execute(shell="bash",
+        command="/local/repository/setup_grafana.sh > /tmp/grafana-setup.log 2>&1"))
 
     # Install and start X11 VNC. Calling this informs the Portal that you want a VNC
     # option in the node context menu to create a browser VNC client.
