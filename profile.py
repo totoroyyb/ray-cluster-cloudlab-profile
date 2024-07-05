@@ -44,6 +44,10 @@ pc.defineParameter("phystype",  "Optional physical node type",
                    longDescription="Specify a single physical node type (pc3000,d710,etc) " +
                    "instead of letting the resource mapper choose for you.")
 
+pc.defineParameter("dualPort",  "Add two ifac on each node",
+                   portal.ParameterType.BOOLEAN, True,
+                   longDescription="If disabled, only one interface will be created. Otherwise, two interfaces will be used. If enabled, make sure this type of machine has at least two ports for experiments.")
+
 # pc.defineParameter("dataset", "Your dataset URN",
 #                    portal.ParameterType.STRING,
 #                    "urn:publicid:IDN+wisc.cloudlab.us:flashburst-pg0+ltdataset+ray-text-file")
@@ -145,6 +149,23 @@ if params.nodeCount > 1:
     if params.sameSwitch:
         lan.setNoInterSwitchLinks()
 
+lan2 = None
+if params.dualPort:
+    if params.nodeCount > 1:
+        if params.nodeCount == 2:
+            lan2 = request.Link()
+        else:
+            lan2 = request.LAN()
+    
+        if params.bestEffort:
+            lan2.best_effort = True
+            lan2.link_multiplexing = True
+        if params.linkSpeed > 0:
+            lan2.bandwidth = params.linkSpeed
+        if params.sameSwitch:
+            lan2.setNoInterSwitchLinks()
+
+
 # fslink = request.Link("fslink")
 # fsnode = request.RemoteBlockstore("fsnode", "/mydata")
 # fsnode.dataset = params.dataset
@@ -189,6 +210,10 @@ for i in range(params.nodeCount):
     if params.nodeCount > 1:
         iface = node.addInterface("eth1", pg.IPv4Address('10.10.1.%d' % (i + 1),'255.255.255.0'))
         lan.addInterface(iface)
+
+        if params.dualPort:
+            iface_1 = node.addInterface("eth2", pg.IPv4Address('10.10.2.%d' % (i + 1),'255.255.255.0'))
+            lan2.addInterface(iface_1)
 
     # Optional hardware type.
     if params.phystype != "":
